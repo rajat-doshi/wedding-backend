@@ -3,6 +3,7 @@ const ErrorHandling = require("../../Utility/ErrorHandling/ErrorHandling");
 const nodemailer = require("nodemailer");
 const OtpVerify = require("../Common/Schema/otp_verify");
 const Common = require("../Common/Common");
+const moment =require("moment")
 class UserMasterModal {
   constructor() {
     this.AddUser = this.AddUser.bind(this);
@@ -91,11 +92,29 @@ class UserMasterModal {
   async AllUserList(req, response) {
     try {
       let limit = parseInt(req.query.limit);
+      let condition={}
       let skip =
         parseInt(req.query.page) != 1
           ? parseInt(req.query.page) * parseInt(req.query.limit)-1
           : 0;
-      let result = await UserMasterModel.find({}).limit(limit).skip(skip);
+       if(req.query.from_age)
+       {
+         let today_date=new Date();
+         let date= moment(new Date()).subtract(req.query.from_age, 'years');
+         condition.birth_date={$gte:new Date(date)}
+       }
+       if(req.query.to_age)
+       {
+        let today_date=new Date();
+        let date= moment(new Date()).subtract(req.query.to_age, 'years');
+        condition.birth_date={$lt:new Date(date),...condition.birth_date};
+       }
+       if(req.query.religion)
+       {
+        condition={...condition,religion:req.query.religion}
+       }
+
+      let result = await UserMasterModel.find(condition).limit(limit).skip(skip);
       let finalResponse = {
         records: result,
         total_record: await UserMasterModel.countDocuments(),
@@ -132,7 +151,7 @@ class UserMasterModal {
       secure: false, // true for 465, false for other ports
       auth: {
         user: "rajatdoshi11@outlook.com", // generated ethereal user
-        pass: "Anamikarajat@123", // generated ethereal password
+        pass: "PappuPassHoGaya", // generated ethereal password
       },
     });
     let info = await transporter.sendMail({
