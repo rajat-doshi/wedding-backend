@@ -1,27 +1,33 @@
 const UserMasterModal = require("../Modal/UserMaster/UserMasterModal");
 const ErrorHandling = require("../Utility/ErrorHandling/ErrorHandling");
-
+const {User, OtpVerify} = require("../Config/Database")
 class UserMaster {
   constructor() {
     this.AddUser = this.AddUser.bind(this);
   }
-  AddUser(req, res, next) {
-    UserMasterModal.AddUser(req, res, next);
+ 
+ async AddUser(req, res, next) {
+    User.sync();
+    OtpVerify.sync();
+    UserMasterModal.AddUser(req, res, next, {User,OtpVerify});
   }
   OtpVerify(req, res, next) {
-    UserMasterModal.OtpVerify(req.body, res);
+    User.sync();
+    OtpVerify.sync();
+    UserMasterModal.OtpVerify(req.body, res,{User,OtpVerify});
   }
   Login(req, res, next) {
-    UserMasterModal.UserExist(req.body, res, next);
+    UserMasterModal.UserExist(req.body, res,{User});
   }
   UpdateUser(req, res, next) {
-    UserMasterModal.UpdateUser({ _id: req.body._id }, { ...req.body }, res);
+
+  //  UserMasterModal.UpdateUser(req,res,next,{User});
   }
   AllUserList(req, res, next) {
-    let result = UserMasterModal.AllUserList(req, res, next);
+    let result = UserMasterModal.AllUserList(req, res, next,{User});
   }
   GetUserDetail(req, res, next) {
-    UserMasterModal.GetUserDetail(req.body, res);
+    UserMasterModal.GetUserDetail(req.body, res,next,{User});
   }
   ProfilePhotoUpload(req, res, next) {
     let FilePath = `Uploads/${Math.random() * 10000000000000}${

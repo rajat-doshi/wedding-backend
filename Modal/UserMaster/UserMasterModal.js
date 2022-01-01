@@ -3,28 +3,25 @@ const ErrorHandling = require("../../Utility/ErrorHandling/ErrorHandling");
 const nodemailer = require("nodemailer");
 const OtpVerify = require("../Common/Schema/otp_verify");
 const Common = require("../Common/Common");
-const moment =require("moment")
+const moment =require("moment");
+const { Op } = require('sequelize');
+const { json } = require("body-parser");
 class UserMasterModal {
   constructor() {
     this.AddUser = this.AddUser.bind(this);
     this.ForgotPassword = this.ForgotPassword.bind(this);
   }
-  async AddUser(req, response, next) {
+  async AddUser(req, response, next, {User,OtpVerify}) {
     try {
-      let userExist = await UserMasterModel.find({
-        email_address: req.body.email_address,
-      });
-
-      if (userExist.length == 0) {
-        var result = await UserMasterModel(req.body).save();
-        let otp = Math.floor(Math.random() * 1000000 + 1);
-        let otpVerifyResult = await OtpVerify({
-          registred_user_id: result._id,
-          otp: otp,
-          first_verify: false,
-        }).save();
-
-        if (this.VerifyEmail(otp, result.email_address)) {
+      const {email_address} = req.body;
+      const userExist= await User.findOne({ where: { email_address: email_address } });
+      if (!userExist) {
+        const detailRow = {...req.body,first_verify:false}
+        var result = await User.create(detailRow);
+        const otp = Math.floor(Math.random() * 1000000 + 1);
+        const otpDetail = {otp:otp,u_id:result.dataValues.id}
+        await OtpVerify.create(otpDetail)
+       if (this.VerifyEmail(otp, result.email_address)) {
           response.json(ErrorHandling.Success(result, "Mail sent"));
         } else {
           response.json(ErrorHandling.Success(result, "Data inserted"));
@@ -41,10 +38,22 @@ class UserMasterModal {
       response.json(ErrorHandling.Error(err, "Error1"));
     }
   }
-  async UpdateUser(condition, request, response) {
+  async UpdateUser(req,response, next,{User}) {
     try {
-      let result = await UserMasterModel(condition).updateOne(request);
-      response.json(ErrorHandling.Success(result, "Data updated"));
+      const {token} = req;
+      console.log(req)
+      response.json(json.toString(req.files))
+      let result = await User.update({...req},{
+        where:{token:token}
+      });
+      if(result[0]===1)
+      {
+        response.json(ErrorHandling.Success(result, "Data updated"));
+      }
+      else{
+        response.json(ErrorHandling.Error(result, "Data is not updated"));
+      }
+     
     } catch (err) {
       response.json(ErrorHandling.Error(err, "Error"));
     }
@@ -65,11 +74,31 @@ class UserMasterModal {
       return err;
     }
   }
-  async UserExist(req, response) {
+  async UserExist(req, response,{User}) {
     try {
-      let result = await UserMasterModel.find(req);
-      if (result.length > 0) {
-        response.json(ErrorHandling.Success(result[0], "Login successfully"));
+      const {email_address, password} = req  
+      let result = await User.findOne({
+        where:{
+          email_address: email_address,
+          password:password,
+        }
+      });
+      if (result) {
+        const token = Common.Makeid(10);
+        const userDetails = await User.update({
+          token:token
+        },{
+          where:{
+            email_address: email_address,
+            password:password,
+          }
+        });
+        response.json(
+          ErrorHandling.Success(
+            {token:token},
+             "Login successfully"
+             )
+          );
       } else {
         response.json(
           ErrorHandling.Error(
@@ -89,35 +118,52 @@ class UserMasterModal {
     try {
     } catch (err) {}
   }
-  async AllUserList(req, response) {
+  async AllUserList(req, response,next,{User}) {
     try {
       let limit = parseInt(req.query.limit);
-      let condition={}
+      console.log(req.query)
+      const {from_age,to_age,gender,religion} = req.query;
+      let condition={};
       let skip =
         parseInt(req.query.page) != 1
           ? parseInt(req.query.page) * parseInt(req.query.limit)-1
           : 0;
-       if(req.query.from_age)
+       if(from_age)
        {
-         let today_date=new Date();
-         let date= moment(new Date()).subtract(req.query.from_age, 'years');
-         condition.birth_date={$gte:new Date(date)}
+        condition={age:{[Op.gt]:from_age}};
        }
-       if(req.query.to_age)
+       if(to_age)
        {
-        let today_date=new Date();
-        let date= moment(new Date()).subtract(req.query.to_age, 'years');
-        condition.birth_date={$lt:new Date(date),...condition.birth_date};
+        condition={age:{
+          ...condition.age,
+          [Op.lt]:to_age}
+        };
        }
-       if(req.query.religion)
+       if(gender)
        {
-        condition={...condition,religion:req.query.religion}
+         
+         condition = {...condition,gender:gender}
        }
-
-      let result = await UserMasterModel.find(condition).limit(limit).skip(skip);
+       if(religion)
+       {
+        condition={...condition,religion:religion}
+       }
+      let result = await User.findAll({ 
+        attributes: [
+          'id',
+          'first_name',
+          'last_name',
+          'age',
+          'religion',
+          'email_address'
+        ],
+        where: {...condition},
+         limit: limit,
+         offset:skip?skip:0
+         });
       let finalResponse = {
         records: result,
-        total_record: await UserMasterModel.countDocuments(),
+        total_record: limit,
         page: req.query.page,
       };
 
@@ -129,15 +175,16 @@ class UserMasterModal {
       );
     }
   }
-  async GetUserDetail(req, response) {
+  async GetUserDetail(req, response,next,{User}) {
     try {
-      let result = await UserMasterModel.find(req);
-      if (result.length > 0) {
-        response.json(ErrorHandling.Success(result[0], "User detail"));
+      let result = await User.findOne({ where: req });
+      if (result) {
+        response.json(ErrorHandling.Success(result, "User detail"));
       } else {
         response.json(ErrorHandling.Error(result, "User not exist!"));
       }
     } catch (err) {
+      console.log(err)
       response.json(
         ErrorHandling.Error(err, "There are some technical issue.")
       );
@@ -167,12 +214,12 @@ class UserMasterModal {
       return false;
     }
   }
-  async OtpVerify(condition, response, next) {
+  async OtpVerify(condition, response,{User,OtpVerify}) {
     try {
-      let userExist = await UserMasterModel.find({
-        email_address: condition.email_address,
+      let userExist = await User.findOne({
+       where:{ email_address: condition.email_address}
       });
-      if (userExist.length == 0) {
+      if (!userExist) {
         response.json(
           ErrorHandling.Error(
             userExist,
@@ -182,23 +229,23 @@ class UserMasterModal {
         return;
       }
 
-      let result = await OtpVerify.find({
-        otp: condition.otp,
-        registred_user_id: userExist[0]._id,
+      let resultOtp = await OtpVerify.findOne({
+       where:{
+      otp: condition.otp,
+      u_id: userExist.id
+    }
       });
-      if (result.length > 0) {
-        let token = Common.Makeid(10);
-        let result = await UserMasterModel.update(
-          {
-            email_address: condition.email_address,
-          },
-          { $set: { verify: true, token: token } }
-        );
+      if (resultOtp) {
+        let result = await User.update({ first_verify: true }, {
+          where: {
+            id: resultOtp.u_id
+          }
+        });
         response.json(
-          ErrorHandling.Success({ token }, "Otp verify successfully")
+          ErrorHandling.Success({result }, "Otp verify successfully")
         );
       } else {
-        response.json(ErrorHandling.Error(result, "Entred otp is wrong"));
+        response.json(ErrorHandling.Error(resultOtp, "Entred otp is wrong"));
       }
     } catch (err) {
       response.json(

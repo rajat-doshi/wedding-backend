@@ -12,15 +12,8 @@ class Common {
     });
   }
 
-  Makeid(length) {
-    var result = "";
-    var characters =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    var charactersLength = characters.length;
-    for (var i = 0; i < length; i++) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return result;
+  Makeid() {
+  return Math.random(10).toString(36).substr(2); 
   }
 }
 module.exports = new Common();

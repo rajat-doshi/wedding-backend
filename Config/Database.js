@@ -1,12 +1,49 @@
-var mongoose = require("mongoose");
-  //Import the mongoose module
-  //Set up default mongoose connection
-  
-  var mongoDB =
-    "mongodb+srv://rajat:Bacancy@123@cluster0-9jwjh.mongodb.net/wedding?retryWrites=true&w=majority";
-    module.exports = mongoose.connect(mongoDB, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    })
-    .then(() => console.log("DB connnection successful!"))
-    .catch(() => console.error.bind(console, "MongoDB connection error:"));
+const { Sequelize, DataTypes } = require('sequelize');
+const mysql= new Sequelize("wedding1", "root", "123456",{
+  host: 'localhost',
+  dialect:"mysql"
+});
+exports.User = mysql.define('user_masters', {
+  first_name: {
+    type: DataTypes.STRING,
+  },
+  last_name: {
+    type: DataTypes.STRING
+  },
+  age:{
+    type:DataTypes.INTEGER
+  },
+  gender:{
+    type:DataTypes.STRING
+  },
+  religion:{
+    type:DataTypes.STRING
+  },
+  email_address: {
+    type: DataTypes.STRING
+  },
+  mobile_number: {
+    type: DataTypes.STRING
+  },
+  address: {
+    type: DataTypes.STRING
+  },
+  password: {
+    type: DataTypes.STRING
+  },
+  first_verify:{
+    type:DataTypes.BOOLEAN
+  },
+  token: {
+    type: DataTypes.STRING,
+  }
+});
+
+exports.OtpVerify = mysql.define('otp_verify', {
+ otp:{
+   type:DataTypes.STRING
+ },
+ u_id:{
+   type:DataTypes.STRING
+  }
+})
