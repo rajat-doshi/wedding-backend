@@ -10,9 +10,8 @@ app.use(cors());
 const formData = require("express-form-data");
 const os = require("os");
 const port = 3001;
-
 var bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded({ extended: false }));
+//app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 require("./Routes/index")(app);
 app.use(function (err, req, res, next) {

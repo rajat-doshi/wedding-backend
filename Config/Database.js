@@ -39,7 +39,7 @@ exports.User = mysql.define('user_masters', {
   }
 });
 
-exports.OtpVerify = mysql.define('otp_verify', {
+exports.OtpVerify = mysql.define('otp_verifies', {
  otp:{
    type:DataTypes.STRING
  },
