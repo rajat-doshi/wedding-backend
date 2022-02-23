@@ -40,9 +40,9 @@ class UserMasterModal {
   }
   async UpdateUser(req, response, next, { User }) {
     try {
-      const { token } = req;
-      response.json(json.toString(req.files))
-      let result = await User.update({ ...req }, {
+      const { body } = req;
+      const {token}= body;
+      let result = await User.update({ ...body }, {
         where: { token: token }
       });
       if (result[0] === 1) {

@@ -25,6 +25,21 @@ exports.User = mysql.define('user_masters', {
   mobile_number: {
     type: DataTypes.STRING
   },
+  height:{
+    type: DataTypes.STRING
+  },
+  weight:{
+    type: DataTypes.STRING
+  },
+  zipcode:{
+    type: DataTypes.INTEGER
+  },
+  city:{
+    type: DataTypes.STRING
+  },
+  state:{
+    type: DataTypes.STRING
+  },
   address: {
     type: DataTypes.STRING
   },
@@ -35,6 +50,27 @@ exports.User = mysql.define('user_masters', {
     type:DataTypes.BOOLEAN
   },
   token: {
+    type: DataTypes.STRING,
+  },
+  religion: {
+    type: DataTypes.STRING,
+  },
+  occuption: {
+    type: DataTypes.STRING,
+  },
+  job_profile:{
+    type: DataTypes.STRING,
+  },
+  income:{
+    type: DataTypes.STRING,
+  },
+  father_name:{
+    type: DataTypes.STRING,
+  },
+  father_occuption:{
+    type: DataTypes.STRING,
+  },
+  father_job_profile:{
     type: DataTypes.STRING,
   }
 });
