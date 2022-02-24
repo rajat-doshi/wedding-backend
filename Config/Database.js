@@ -72,6 +72,27 @@ exports.User = mysql.define('user_masters', {
   },
   father_job_profile:{
     type: DataTypes.STRING,
+  },
+  father_income:{
+    type: DataTypes.STRING,
+  },
+  mother_name:{
+    type: DataTypes.STRING,
+  },
+  mother_occuption:{
+    type: DataTypes.STRING,
+  },
+  mother_income:{
+    type: DataTypes.INTEGER,
+  },
+  mother_job_profile:{
+    type: DataTypes.STRING,
+  },
+  married_brother:{
+    type:DataTypes.INTEGER
+  },
+  unmarried_brother:{
+    type:DataTypes.INTEGER
   }
 });
 
