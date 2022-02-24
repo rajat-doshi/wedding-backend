@@ -57,5 +57,9 @@ class UserMaster {
   ChangePassword(req, res, next) {
     UserMasterModal.ChangePassword(req.body, res, next, {User})
   }
+
+  AllUserCount(req,res,next){
+    UserMasterModal.UserCount(res,{User})
+  }
 }
 module.exports = new UserMaster();

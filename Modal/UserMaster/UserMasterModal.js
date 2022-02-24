@@ -137,7 +137,6 @@ class UserMasterModal {
         };
       }
       if (gender) {
-
         condition = { ...condition, gender: gender }
       }
       if (religion) {
@@ -150,7 +149,9 @@ class UserMasterModal {
           'last_name',
           'age',
           'religion',
-          'email_address'
+          'email_address',
+          'city',
+          'state',
         ],
         where: { ...condition },
         limit: limit,
@@ -161,7 +162,6 @@ class UserMasterModal {
         total_record: limit,
         page: req.query.page,
       };
-
       response.json(ErrorHandling.Success(finalResponse, "All user list"));
     } catch (err) {
       response.json(
@@ -220,7 +220,6 @@ class UserMasterModal {
           )
         );
       }
-
       let resultOtp = await OtpVerify.findOne({
         where: {
           otp: condition.otp,
@@ -302,6 +301,26 @@ class UserMasterModal {
         )
       );
     }
+  }
+
+ async UserCount(response,{User}){
+   try{
+    const allUserCount = await User.count();
+    const maleUserCount = await User.count({ 
+      where: {'gender':"Male" }});
+    const femaleUserCount = await User.count({ 
+        where: {'gender':"Female" }});
+    response.json(ErrorHandling.Success({
+      all_user_count:allUserCount,
+      male_user_count:maleUserCount,
+      female_user_count:femaleUserCount,
+    }, "All user count"));
+   }catch(err){
+     console.log(err)
+    response.json(
+      ErrorHandling.Error(err, "There are some technical issue.")
+    );
+   }
   }
 }
 module.exports = new UserMasterModal();

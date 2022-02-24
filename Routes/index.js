@@ -9,4 +9,5 @@ module.exports = (app) => {
   app.post(`/register-user-verification`, UserMaster.OtpVerify);
   app.post(`/forgot-password`, UserMaster.ForgotPassword);
   app.post(`/change-password`, UserMaster.ChangePassword);
+  app.get('/all-user-count',UserMaster.AllUserCount);
 };

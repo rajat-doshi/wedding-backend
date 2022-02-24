@@ -93,6 +93,15 @@ exports.User = mysql.define('user_masters', {
   },
   unmarried_brother:{
     type:DataTypes.INTEGER
+  },
+  married_sister:{
+    type:DataTypes.INTEGER
+  },
+  unmarried_sister:{
+    type:DataTypes.INTEGER
+  },
+  birth_date:{
+    type:DataTypes.DATE
   }
 });
 
