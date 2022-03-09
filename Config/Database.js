@@ -1,6 +1,18 @@
 const { Sequelize, DataTypes } = require('sequelize');
-const mysql= new Sequelize("wedding1", "root", "123456",{
-  host: 'localhost',
+const os = require("os");
+console.log(os.hostname())
+let DATABASE_NAME="wedding-db";
+let USER_NAME = "admin";
+let PASSWORD = "Tajmahal123"
+let HOST_NAME="wedding-db.ccjtmcaqpmx1.ap-south-1.rds.amazonaws.com";
+if(os.hostname()==="DESKTOP-F8VHQA4"){
+  DATABASE_NAME="wedding1";
+  USER_NAME="root";
+  PASSWORD="123456";
+  HOST_NAME="localhost";
+}
+const mysql= new Sequelize(DATABASE_NAME,USER_NAME,PASSWORD,{
+  host: HOST_NAME,
   dialect:"mysql"
 });
 exports.User = mysql.define('user_masters', {

@@ -217,7 +217,7 @@ class UserMasterModal {
       secure: false, // true for 465, false for other ports
       auth: {
         user: "rajatdoshi11@outlook.com", // generated ethereal user
-        pass: "Rosy@1234", // generated ethereal password
+        pass: "VirginMarry@123", // generated ethereal password
       },
     });
     let info = await transporter.sendMail({
