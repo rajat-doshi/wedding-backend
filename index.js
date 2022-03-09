@@ -14,7 +14,7 @@ app.use(function (err, req, res, next) {
 const port = process.env.PORT || 3001;
 app.get('/files/:path', (req, res) => {
   const {path} = req.params
-  res.sendFile(__dirname + /uploads/ + path); 
+  res.sendFile(__dirname + /uploads/+ path); 
   });
 app.get("/", (req, res) => res.send("Hello World!"));
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
