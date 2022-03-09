@@ -102,6 +102,9 @@ exports.User = mysql.define('user_masters', {
   },
   birth_date:{
     type:DataTypes.DATE
+  },
+  profile_picture:{
+    type:DataTypes.STRING                                      
   }
 });
 

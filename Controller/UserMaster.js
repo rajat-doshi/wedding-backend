@@ -1,11 +1,10 @@
 const UserMasterModal = require("../Modal/UserMaster/UserMasterModal");
 const ErrorHandling = require("../Utility/ErrorHandling/ErrorHandling");
-const { User, OtpVerify } = require("../Config/Database")
+const { User, OtpVerify } = require("../Config/Database");
 class UserMaster {
   constructor() {
     this.AddUser = this.AddUser.bind(this);
   }
-
   async AddUser(req, res, next) {
     User.sync();
     OtpVerify.sync();
@@ -52,14 +51,14 @@ class UserMaster {
     });
   }
   ForgotPassword(req, res, next) {
-    UserMasterModal.ForgotPassword(req.body, res, next,{User, OtpVerify});
+    UserMasterModal.ForgotPassword(req.body, res, next, { User, OtpVerify });
   }
   ChangePassword(req, res, next) {
-    UserMasterModal.ChangePassword(req.body, res, next, {User})
+    UserMasterModal.ChangePassword(req.body, res, next, { User })
   }
 
-  AllUserCount(req,res,next){
-    UserMasterModal.UserCount(res,{User})
+  AllUserCount(req, res, next) {
+    UserMasterModal.UserCount(res, { User })
   }
 }
 module.exports = new UserMaster();

@@ -3,13 +3,14 @@ const ErrorHandling = require("../../Utility/ErrorHandling/ErrorHandling");
 const nodemailer = require("nodemailer");
 const OtpVerify = require("../Common/Schema/otp_verify");
 const Common = require("../Common/Common");
-const moment = require("moment");
 const { Op } = require('sequelize');
-const { json } = require("body-parser");
+const multer = require('multer');
+const { fileUpload } = require("../../Utility/generic");
 class UserMasterModal {
   constructor() {
     this.AddUser = this.AddUser.bind(this);
     this.ForgotPassword = this.ForgotPassword.bind(this);
+    this.UpdateProfilePicture = this.UpdateProfilePicture.bind(this);
   }
   async AddUser(req, response, next, { User, OtpVerify }) {
     try {
@@ -38,32 +39,56 @@ class UserMasterModal {
       response.json(ErrorHandling.Error(err, "Error1"));
     }
   }
+
+  async UpdateProfilePicture(req, response, next, { User }) {
+    fileUpload("profile_picture")(req, response, async function (err) {
+      if (err instanceof multer.MulterError) {
+        console.log("A Multer error occurred when uploading.")
+        response.json(ErrorHandling.Success(result, "A Multer error occurred when uploading."));
+        return;
+      } else if (err) {
+        response.json(ErrorHandling.Success(result, "An unknown error occurred when uploading."));
+        return;
+      }
+      const { token } = req.body;
+      const { filename } = req.file
+      try {
+        const result = await User.update({ profile_picture: filename }, {
+          where: { token: token }
+        });
+        if (result[0] === 1) {
+          response.json(ErrorHandling.Success(result, "Profile picture updated"));
+        }
+        else {
+          response.json(ErrorHandling.Error(result, "Data is not updated"));
+        }
+      } catch (err) {
+        response.json(ErrorHandling.Error(result, "Error"));
+      }
+    })
+  }
   async UpdateUser(req, response, next, { User }) {
+    const { body } = req;
+    if (Object.keys(body).length == 0) {
+      this.UpdateProfilePicture(req, response, next, { User })
+      return;
+    }
     try {
-      const { body } = req;
-      const {token}= body;
+      const { token } = body;
       let result = await User.update({ ...body }, {
         where: { token: token }
       });
       if (result[0] === 1) {
-        response.json(ErrorHandling.Success(result, "Data updated"));
+        response.json(ErrorHandling.Success(result, "User details updated"));
       }
       else {
-        response.json(ErrorHandling.Error(result, "Data is not updated"));
+        response.json(ErrorHandling.Error(result, "User details is not updated"));
       }
-
     } catch (err) {
       response.json(ErrorHandling.Error(err, "Error"));
     }
   }
-  async ProfilePhotoUpload(file, filePath) {
-    try {
-      let result = await file.mv(`${filePath}`);
-      return true;
-    } catch (err) {
-      return false;
-    }
-  }
+
   async DeleteUser(record) {
     try {
       let result = await UserMasterModel.findOneAndDelete(record);
@@ -152,6 +177,7 @@ class UserMasterModal {
           'email_address',
           'city',
           'state',
+          'profile_picture'
         ],
         where: { ...condition },
         limit: limit,
@@ -260,9 +286,9 @@ class UserMasterModal {
       } else {
         let otp = Math.floor(Math.random() * 1000000 + 1);
         let otpVerifyResult = await OtpVerify.update({
-          otp:otp
-        },{where:{u_id:userExist.id}});
-        this.VerifyEmail(otp,email_address);
+          otp: otp
+        }, { where: { u_id: userExist.id } });
+        this.VerifyEmail(otp, email_address);
         response.json(
           ErrorHandling.Success(
             otpVerifyResult,
@@ -276,14 +302,15 @@ class UserMasterModal {
       );
     }
   }
-  async ChangePassword(req, response, next, {User}) {
+  async ChangePassword(req, response, next, { User }) {
     try {
-      const {password} = req;
+      const { password } = req;
       let verifyToken = await User.findOne(
-        { where: {
-          token: req.token
-        }
-      });
+        {
+          where: {
+            token: req.token
+          }
+        });
       if (verifyToken) {
         let result = await User.update(
           { password: password },
@@ -303,24 +330,26 @@ class UserMasterModal {
     }
   }
 
- async UserCount(response,{User}){
-   try{
-    const allUserCount = await User.count();
-    const maleUserCount = await User.count({ 
-      where: {'gender':"Male" }});
-    const femaleUserCount = await User.count({ 
-        where: {'gender':"Female" }});
-    response.json(ErrorHandling.Success({
-      all_user_count:allUserCount,
-      male_user_count:maleUserCount,
-      female_user_count:femaleUserCount,
-    }, "All user count"));
-   }catch(err){
-     console.log(err)
-    response.json(
-      ErrorHandling.Error(err, "There are some technical issue.")
-    );
-   }
+  async UserCount(response, { User }) {
+    try {
+      const allUserCount = await User.count();
+      const maleUserCount = await User.count({
+        where: { 'gender': "Male" }
+      });
+      const femaleUserCount = await User.count({
+        where: { 'gender': "Female" }
+      });
+      response.json(ErrorHandling.Success({
+        all_user_count: allUserCount,
+        male_user_count: maleUserCount,
+        female_user_count: femaleUserCount,
+      }, "All user count"));
+    } catch (err) {
+      console.log(err)
+      response.json(
+        ErrorHandling.Error(err, "There are some technical issue.")
+      );
+    }
   }
 }
 module.exports = new UserMasterModal();
